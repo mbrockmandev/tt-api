@@ -87,7 +87,7 @@ func (h *Handler) GetBookById(w http.ResponseWriter,
 		if err != nil {
 			jsonHelper.ErrorJson(
 				w,
-				fmt.Errorf("failed to retrieve book with id %v", id),
+				fmt.Errorf("failed to retrieve book with id %v at library %v", id, libraryId),
 				http.StatusBadRequest,
 			)
 			return
