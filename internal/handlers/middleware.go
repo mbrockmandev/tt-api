@@ -11,7 +11,7 @@ import (
 
 func (h *Handler) EnableCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "https://tometracker-frontend.ue.r.appspot.com")
+		w.Header().Set("Access-Control-Allow-Origin", "https://tometracker-react.onrender.com")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 		if r.Method == "OPTIONS" {
