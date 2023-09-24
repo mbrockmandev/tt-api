@@ -40,6 +40,19 @@ func (p *PostgresDBRepo) CreateUser(user *models.User) (int, error) {
 		return 0, err
 	}
 
+	query = fmt.Sprintf(`
+		insert into
+			users_libraries
+				(user_id, library_id)
+			values
+				(%v, %v)
+	`, userId, 1)
+
+	_, err = p.DB.ExecContext(ctx, query)
+	if err != nil {
+		return 0, err
+	}
+
 	return userId, nil
 }
 

@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"math/rand"
 
 	"github.com/lib/pq"
 	"github.com/mbrockmandev/tometracker/internal/models"
@@ -30,6 +31,11 @@ func (p *PostgresDBRepo) CreateLibrary(library *models.Library) (int, error) {
 		library.Country,
 		library.Phone,
 	).Scan(&newId)
+	if err != nil {
+		return 0, err
+	}
+
+	err = p.populateBooksForLibrary(ctx, newId)
 	if err != nil {
 		return 0, err
 	}
@@ -117,7 +123,7 @@ func (p *PostgresDBRepo) GetAllLibraries(limit, offset int) ([]*models.Library, 
 		}
 
 		if count == 0 {
-			return nil, 0, fmt.Errorf("Unable to find any libraries")
+			return nil, 0, fmt.Errorf("unable to find any libraries")
 		}
 
 		libraries = append(libraries, &library)
@@ -271,4 +277,42 @@ func (p *PostgresDBRepo) GetBooksByLibrary(libraryId int) ([]*models.Book,
 	}
 
 	return books, libraryInventory, nil
+}
+
+func (p *PostgresDBRepo) populateBooksForLibrary(ctx context.Context, libraryId int) error {
+	rows, err := p.DB.QueryContext(ctx, "select id from books")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	var bookIds []int
+	for rows.Next() {
+		var bookId int
+		if err := rows.Scan(&bookId); err != nil {
+			return err
+		}
+		bookIds = append(bookIds, bookId)
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	for _, bookId := range bookIds {
+		totalCopies := rand.Intn(10) + 1
+		borrowedCopies := 0
+		availableCopies := totalCopies
+
+		_, err = p.DB.ExecContext(ctx, `
+			insert into
+				books_libraries
+					(book_id, library_id, total_copies, borrowed_copies, available_copies)
+				values
+					($1, $2, $3, $4, $5)
+		`, bookId, libraryId, totalCopies, borrowedCopies, availableCopies)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -75,6 +76,14 @@ func (app *Application) ConnectDB() (*sql.DB, error) {
 		return nil, err
 	}
 	log.Println("Book data inserted")
+
+	err = populateBooksInEachLibrary(db)
+	if err != nil {
+		db.Close()
+		log.Println("Failed to populate books in each library")
+		return nil, err
+	}
+	log.Println("Books added to each library")
 
 	return db, nil
 }
@@ -243,6 +252,76 @@ func batchInsertFromCsvToPostgres(db *sql.DB, path string, batchSize int) error 
 	return nil
 }
 
+func populateBooksInEachLibrary(db *sql.DB) error {
+	var count int
+	err := db.QueryRow("select count(*) from books_libraries;").Scan(&count)
+	if err != nil {
+		return err
+	}
+
+	if count > 1000 {
+		log.Println("Data already exists for books in libraries, skipping insert...")
+		return nil
+	}
+
+	rows, err := db.Query("select id from books")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	var bookIds []int
+	for rows.Next() {
+		var bookId int
+		if err := rows.Scan(&bookId); err != nil {
+			return err
+		}
+		bookIds = append(bookIds, bookId)
+	}
+
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	rows, err = db.Query("select id from libraries")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var libraryId int
+		if err := rows.Scan(&libraryId); err != nil {
+			return err
+		}
+
+		for _, bookId := range bookIds {
+			totalCopies := rand.Intn(10) + 1
+			borrowedCopies := rand.Intn(totalCopies)
+			availableCopies := totalCopies - borrowedCopies
+
+			_, err = db.Exec(`
+												insert into
+													books_libraries
+														(book_id, library_id, total_copies, borrowed_copies, available_copies)
+													values
+														($1, $2, $3, $4, $5)
+												`,
+				bookId, libraryId, totalCopies, borrowedCopies, availableCopies)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	log.Println("inserted data for books in libraries")
+	return nil
+}
+
 func replacePlaceholders(stmt string, argCount int) string {
 	counter := 1
 	for i := 0; i < argCount; i++ {
@@ -289,7 +368,7 @@ func getDsn() string {
 		return fmt.Sprintf("host=%s port=%s database=%s sslmode=disable timezone=UTC connect_timeout=5", dbHost, dbPort, dbName)
 	}
 
-	// prod mode (AWS RDS Postgres)
+	// prod mode (render postgres)
 	dbHost = os.Getenv("DB_HOST")
 	dbPort = os.Getenv("DB_PORT")
 	dbUsername = os.Getenv("DB_USERNAME")
