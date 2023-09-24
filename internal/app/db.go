@@ -13,6 +13,7 @@ import (
 )
 
 func (app *Application) ConnectDB() (*sql.DB, error) {
+
 	defaultDsn := getDefaultDsn()
 	db, err := sql.Open("pgx", defaultDsn)
 	if err != nil {
@@ -26,6 +27,15 @@ func (app *Application) ConnectDB() (*sql.DB, error) {
 		db.Close()
 		log.Println("Failed to check if database exists")
 		return nil, err
+	}
+
+	// drop tables if flagged by env var
+	shouldDrop := os.Getenv("DROP_TABLES_DEBUG")
+	if shouldDrop == "drop" {
+		err := dropTables(db)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// create database
@@ -70,6 +80,11 @@ func (app *Application) ConnectDB() (*sql.DB, error) {
 }
 
 func getDefaultDsn() string {
+	env := os.Getenv("ENV")
+	if env == "debug" {
+		return "host=localhost port=5432 database=postgres sslmode=disable timezone=UTC connect_timeout=5"
+	}
+
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbUsername := os.Getenv("DB_USERNAME")
@@ -124,6 +139,28 @@ func runSQLScript(db *sql.DB, path string) error {
 		log.Println("Executed command No.", i)
 		// log.Println("Executed command", command)
 	}
+	return nil
+}
+
+func dropTables(db *sql.DB) error {
+	tables := []string{
+		"activity_logs",
+		"books_ratings",
+		"users_genres",
+		"books_genres",
+		"books_libraries",
+		"users_books",
+	}
+
+	for _, table := range tables {
+		query := fmt.Sprintf("DROP TABLE IF EXISTS %s;", table)
+		_, err := db.Exec(query)
+		if err != nil {
+			return fmt.Errorf("failed to drop table %s: %v", table, err)
+		}
+		fmt.Printf("Successfully dropped table %s\n", table)
+	}
+
 	return nil
 }
 
@@ -245,10 +282,11 @@ func getDsn() string {
 	// debug mode (local postgres)
 	if env == "debug" {
 		dbHost = os.Getenv("DB_HOST_DEBUG")
-		dbPort = os.Getenv("DB_PORT_DEBUG")
-		dbUsername = os.Getenv("DB_USERNAME_DEBUG")
-		dbPassword = os.Getenv("DB_PASSWORD_DEBUG")
-		return fmt.Sprintf("host=%s port=%s user=%s password=%s database=%s sslmode=disable timezone=UTC connect_timeout=5", dbHost, dbPort, dbUsername, dbPassword, dbName)
+		dbPort = os.Getenv("DB_PORT")
+		dbName = os.Getenv("DB_DBNAME")
+		// dbUsername = os.Getenv("DB_USERNAME_DEBUG")
+		// dbPassword = os.Getenv("DB_PASSWORD_DEBUG")
+		return fmt.Sprintf("host=%s port=%s database=%s sslmode=disable timezone=UTC connect_timeout=5", dbHost, dbPort, dbName)
 	}
 
 	// prod mode (AWS RDS Postgres)
