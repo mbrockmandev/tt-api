@@ -14,7 +14,7 @@ func NewRouter(h handlers.AppHandlers) http.Handler {
 	r.Route("/api/", func(r chi.Router) {
 		// middleware
 		r.Use(cors.Handler(cors.Options{
-			AllowedOrigins:   []string{"https://tometracker.web.app", "http://tometracker.web.app"},
+			AllowedOrigins:   []string{"https://tometracker-react.onrender.com", "http://tometracker-react.onrender.com"},
 			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 			AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 			AllowCredentials: true,
