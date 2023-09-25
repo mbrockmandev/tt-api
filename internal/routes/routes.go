@@ -106,10 +106,10 @@ func NewRouter(h handlers.AppHandlers) http.Handler {
 			r.Delete("/books/{id}", h.DeleteBook)
 
 			// report routes
-			r.Get("/reports/popularBooks", h.ReportPopularBooks)
-			r.Get("/reports/popularGenres", h.ReportPopularGenres)
-			r.Get("/reports/peakTimes", h.ReportBusyTimes)
-			r.Get("/reports/booksByLibrary", h.ReportBooksByLibrary)
+			// r.Get("/reports/popularBooks", h.ReportPopularBooks)
+			// r.Get("/reports/popularGenres", h.ReportPopularGenres)
+			// r.Get("/reports/peakTimes", h.ReportBusyTimes)
+			// r.Get("/reports/booksByLibrary", h.ReportBooksByLibrary)
 		})
 
 	})
