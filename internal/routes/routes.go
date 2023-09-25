@@ -87,19 +87,21 @@ func NewRouter(h handlers.AppHandlers) http.Handler {
 			r.Use(h.RequireRole("admin"))
 
 			// user routes
+			r.Post("/users", h.CreateUser)
+			r.Get("/users/{id}", h.GetUserById)
 			r.Get("/users", h.GetUserByEmail)
 			r.Put("/users/{id}", h.UpdateUser)
 			r.Delete("/users/{id}", h.DeleteUser)
-			r.Post("/users", h.CreateUser)
 
 			// library routes
-			r.Get("/libraries", h.GetLibraryByName)
 			r.Post("/libraries", h.CreateLibrary)
+			r.Get("/libraries", h.GetLibraryByName)
 			r.Put("/libraries/{id}", h.UpdateLibrary)
 			r.Delete("/libraries/{id}", h.DeleteLibrary)
 
 			// book routes
 			r.Post("/books", h.CreateBook)
+			r.Get("/books/{id}", h.GetBookById)
 			r.Put("/books/{id}", h.UpdateBook)
 			r.Delete("/books/{id}", h.DeleteBook)
 		})
