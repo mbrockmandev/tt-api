@@ -11,7 +11,7 @@ import (
 
 func NewRouter(h handlers.AppHandlers) http.Handler {
 	r := chi.NewRouter()
-	r.Route("/api/", func(r chi.Router) {
+	r.Route("/api", func(r chi.Router) {
 		// middleware
 		r.Use(cors.Handler(cors.Options{
 			AllowedOrigins:   []string{"https://tometracker-react.onrender.com", "http://tometracker-react.onrender.com"},
@@ -88,14 +88,12 @@ func NewRouter(h handlers.AppHandlers) http.Handler {
 
 			// user routes
 			r.Get("/users", h.GetUserByEmail)
-			r.Get("/users/{id}", h.GetUserById)
 			r.Put("/users/{id}", h.UpdateUser)
 			r.Delete("/users/{id}", h.DeleteUser)
 			r.Post("/users", h.CreateUser)
 
 			// library routes
 			r.Get("/libraries", h.GetLibraryByName)
-			r.Get("/libraries/{id}", h.GetLibraryById)
 			r.Post("/libraries", h.CreateLibrary)
 			r.Put("/libraries/{id}", h.UpdateLibrary)
 			r.Delete("/libraries/{id}", h.DeleteLibrary)
@@ -104,12 +102,6 @@ func NewRouter(h handlers.AppHandlers) http.Handler {
 			r.Post("/books", h.CreateBook)
 			r.Put("/books/{id}", h.UpdateBook)
 			r.Delete("/books/{id}", h.DeleteBook)
-
-			// report routes
-			// r.Get("/reports/popularBooks", h.ReportPopularBooks)
-			// r.Get("/reports/popularGenres", h.ReportPopularGenres)
-			// r.Get("/reports/peakTimes", h.ReportBusyTimes)
-			// r.Get("/reports/booksByLibrary", h.ReportBooksByLibrary)
 		})
 
 	})
