@@ -59,6 +59,29 @@ func NewRouter(h handlers.AppHandlers) http.Handler {
 			r.Post("/books/return", h.ReturnBook)
 		})
 
+		// staff only routes
+		r.Route("/staff", func(r chi.Router) {
+			r.Use(h.RequireRole("staff"))
+
+			// user routes
+			r.Get("/users/{id}", h.GetUserById)
+			r.Put("/users/{id}", h.UpdateUser)
+
+			// book routes
+			r.Get("/books/{id}", h.GetBookById)
+			r.Put("/books/{id}", h.UpdateBook)
+
+			// library routes
+			r.Get("/libraries/{id}", h.GetLibraryById)
+			r.Put("/libraries/{id}", h.UpdateLibrary)
+
+			// report routes
+			r.Get("/reports/popularBooks", h.ReportPopularBooks)
+			r.Get("/reports/popularGenres", h.ReportPopularGenres)
+			r.Get("/reports/peakTimes", h.ReportBusyTimes)
+			r.Get("/reports/booksByLibrary", h.ReportBooksByLibrary)
+		})
+
 		// admin only routes
 		r.Route("/admin", func(r chi.Router) {
 			r.Use(h.RequireRole("admin"))
@@ -89,28 +112,6 @@ func NewRouter(h handlers.AppHandlers) http.Handler {
 			r.Get("/reports/booksByLibrary", h.ReportBooksByLibrary)
 		})
 
-		// staff only routes
-		r.Route("/staff", func(r chi.Router) {
-			r.Use(h.RequireRole("staff"))
-
-			// user routes
-			r.Get("/users/{id}", h.GetUserById)
-			r.Put("/users/{id}", h.UpdateUser)
-
-			// book routes
-			r.Get("/books/{id}", h.GetBookById)
-			r.Put("/books/{id}", h.UpdateBook)
-
-			// library routes
-			r.Get("/libraries/{id}", h.GetLibraryById)
-			r.Put("/libraries/{id}", h.UpdateLibrary)
-
-			// report routes
-			r.Get("/reports/popularBooks", h.ReportPopularBooks)
-			r.Get("/reports/popularGenres", h.ReportPopularGenres)
-			r.Get("/reports/peakTimes", h.ReportBusyTimes)
-			r.Get("/reports/booksByLibrary", h.ReportBooksByLibrary)
-		})
 	})
 
 	return r
