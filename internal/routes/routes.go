@@ -65,13 +65,16 @@ func NewRouter(h handlers.AppHandlers) http.Handler {
 
 			// user routes
 			r.Get("/users/{id}", h.GetUserById)
+			r.Get("/users", h.GetUserByEmail)
 			r.Put("/users/{id}", h.UpdateUser)
 
 			// book routes
 			r.Get("/books/{id}", h.GetBookById)
+			r.Get("/books/isbn/{isbn}", h.GetBookByIsbn)
 			r.Put("/books/{id}", h.UpdateBook)
 
 			// library routes
+			r.Get("/libraries", h.GetLibraryByName)
 			r.Get("/libraries/{id}", h.GetLibraryById)
 			r.Put("/libraries/{id}", h.UpdateLibrary)
 
@@ -86,24 +89,29 @@ func NewRouter(h handlers.AppHandlers) http.Handler {
 		r.Route("/admin", func(r chi.Router) {
 			r.Use(h.RequireRole("admin"))
 
-			// user routes
-			r.Post("/users", h.CreateUser)
+			// routes from staff as well
 			r.Get("/users/{id}", h.GetUserById)
 			r.Get("/users", h.GetUserByEmail)
 			r.Put("/users/{id}", h.UpdateUser)
+
+			r.Get("/libraries", h.GetLibraryByName)
+			r.Get("/libraries/{id}", h.GetLibraryById)
+			r.Put("/libraries/{id}", h.UpdateLibrary)
+
+			r.Get("/books/{id}", h.GetBookById)
+			r.Get("/books/isbn/{isbn}", h.GetBookByIsbn)
+			r.Put("/books/{id}", h.UpdateBook)
+
+			// user routes
+			r.Post("/users", h.CreateUser)
 			r.Delete("/users/{id}", h.DeleteUser)
 
 			// library routes
 			r.Post("/libraries", h.CreateLibrary)
-			r.Get("/libraries", h.GetLibraryByName)
-			r.Get("/libraries/{id}", h.GetLibraryById)
-			r.Put("/libraries/{id}", h.UpdateLibrary)
 			r.Delete("/libraries/{id}", h.DeleteLibrary)
 
 			// book routes
 			r.Post("/books", h.CreateBook)
-			r.Get("/books/{id}", h.GetBookById)
-			r.Put("/books/{id}", h.UpdateBook)
 			r.Delete("/books/{id}", h.DeleteBook)
 		})
 
