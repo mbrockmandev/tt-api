@@ -12,7 +12,7 @@ type Handler struct {
 
 type AppHandlers interface {
 	// Test Handlers
-	Home(http.ResponseWriter, *http.Request)
+	KeepApiAlive(http.ResponseWriter, *http.Request)
 
 	// Auth Handlers
 	RegisterNewUser(http.ResponseWriter, *http.Request)

@@ -13,7 +13,7 @@ import (
 )
 
 // debug only
-func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) KeepApiAlive(w http.ResponseWriter, r *http.Request) {
 	payload := struct {
 		Status  string `json:"status"`
 		Message string `json:"message"`

@@ -24,6 +24,7 @@ func NewRouter(h handlers.AppHandlers) http.Handler {
 
 		r.Use(middleware.Recoverer)
 
+		r.Get("/keepalive", h.KeepApiAlive)
 		r.Post("/register", h.RegisterNewUser)
 		r.Route("/auth", func(r chi.Router) {
 			r.Use(h.RateLimit)
