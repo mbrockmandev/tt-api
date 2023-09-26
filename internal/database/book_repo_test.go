@@ -126,7 +126,7 @@ func TestDeleteBook(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	addedBook, err := repo.GetBookByIsbn("9999999999999")
+	addedBook, _, err := repo.GetBookByIsbn("9999999999999")
 	if err != nil {
 		t.Log(err)
 	}
@@ -136,7 +136,7 @@ func TestDeleteBook(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	shouldNotBeFound, err := repo.GetBookByIsbn("9999999999999")
+	shouldNotBeFound, _, err := repo.GetBookByIsbn("9999999999999")
 	if err == nil {
 		t.Fatal("Book should have been deleted")
 	}
@@ -175,7 +175,7 @@ func TestBorrowBook(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	book, err := repo.GetBookByIsbn("9780143124672")
+	book, _, err := repo.GetBookByIsbn("9780143124672")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -200,7 +200,7 @@ func TestReturnBook(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	book, err := repo.GetBookByIsbn("9780143124672")
+	book, _, err := repo.GetBookByIsbn("9780143124672")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -132,7 +132,7 @@ func (p *PostgresDBRepo) GetAllBooks(genre ...int) ([]*models.Book, error) {
 	return books, nil
 }
 
-func (p *PostgresDBRepo) GetBookByIsbn(isbn string) (*models.Book, error) {
+func (p *PostgresDBRepo) GetBookByIsbn(isbn string) (*models.Book, *models.BookMetadata, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -157,9 +157,31 @@ func (p *PostgresDBRepo) GetBookByIsbn(isbn string) (*models.Book, error) {
 		&book.Thumbnail,
 	)
 	if err != nil {
-		return nil, err
+		return nil, nil, fmt.Errorf("failed to scan book with isbn %v", isbn)
 	}
-	return book, nil
+
+	query = `
+	select
+		book_id, total_copies, available_copies, borrowed_copies
+	from
+		books_libraries
+	where
+		book_id = $1
+`
+
+	bookMetadata := &models.BookMetadata{}
+	row = p.DB.QueryRowContext(ctx, query, book.ID)
+	err = row.Scan(
+		&bookMetadata.BookId,
+		&bookMetadata.TotalCopies,
+		&bookMetadata.AvailableCopies,
+		&bookMetadata.BorrowedCopies,
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to scan book metadata with isbn %v", isbn)
+	}
+
+	return book, bookMetadata, nil
 }
 
 func (p *PostgresDBRepo) GetBookById(id int) (*models.Book,
@@ -269,6 +291,63 @@ func (p *PostgresDBRepo) GetBookByIdForLibrary(id, libraryId int) (*models.Book,
 		return nil, nil, fmt.Errorf(
 			"failed to scan book metadata with id %v for library_id %v",
 			id,
+			libraryId,
+		)
+	}
+
+	return book, bookMetadata, nil
+}
+
+func (p *PostgresDBRepo) GetBookByIsbnForLibrary(isbn string, libraryId int) (*models.Book, *models.BookMetadata, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	query := `
+		select
+			id, title, author, isbn, published_at, summary, thumbnail
+		from
+			books
+		where
+			isbn = $1
+	`
+
+	row := p.DB.QueryRowContext(ctx, query, isbn)
+
+	book := &models.Book{}
+	err := row.Scan(
+		&book.ID,
+		&book.Title,
+		&book.Author,
+		&book.ISBN,
+		&book.PublishedAt,
+		&book.Summary,
+		&book.Thumbnail,
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to scan book with isbn %v", isbn)
+	}
+
+	query = `
+		select
+		  book_id, total_copies, available_copies, borrowed_copies
+		from
+		  books_libraries
+		where
+		  book_id = $1 and library_id = $2
+  `
+
+	bookMetadata := &models.BookMetadata{}
+	row = p.DB.QueryRowContext(ctx, query, book.ID, libraryId)
+	err = row.Scan(
+		&bookMetadata.BookId,
+		&bookMetadata.TotalCopies,
+		&bookMetadata.AvailableCopies,
+		&bookMetadata.BorrowedCopies,
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf(
+			"failed to scan book metadata with isbn %v for library_id %v",
+			isbn,
 			libraryId,
 		)
 	}

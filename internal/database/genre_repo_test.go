@@ -100,11 +100,11 @@ func TestReportPopularGenres(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	b, err := repo.GetBookByIsbn("9780143124672")
+	b, _, err := repo.GetBookByIsbn("9780143124672")
 	if err != nil {
 		t.Fatal(err)
 	}
-	b2, err := repo.GetBookByIsbn("9780307958934")
+	b2, _, err := repo.GetBookByIsbn("9780307958934")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -126,14 +126,30 @@ func (h *Handler) GetBookByIsbn(w http.ResponseWriter,
 		return
 	}
 
-	book, err := h.App.DB.GetBookByIsbn(isbn)
+	var book *models.Book
+	var bookMetadata *models.BookMetadata
+
+	libraryId, err := strconv.Atoi(r.URL.Query().Get("library_id"))
 	if err != nil {
-		jsonHelper.ErrorJson(
-			w,
-			fmt.Errorf("failed to retrieve book with isbn %s", isbn),
-			http.StatusBadRequest,
-		)
-		return
+		book, bookMetadata, err = h.App.DB.GetBookByIsbn(isbn)
+		if err != nil {
+			jsonHelper.ErrorJson(
+				w,
+				fmt.Errorf("failed to retrieve book with isbn %v; error: %s", isbn, err),
+				http.StatusBadRequest,
+			)
+			return
+		}
+	} else {
+		book, bookMetadata, err = h.App.DB.GetBookByIsbnForLibrary(isbn, libraryId)
+		if err != nil {
+			jsonHelper.ErrorJson(
+				w,
+				fmt.Errorf("failed to retrieve book with isbn %v at library %v; error: %s", isbn, libraryId, err),
+				http.StatusBadRequest,
+			)
+			return
+		}
 	}
 
 	if book == nil {
@@ -141,7 +157,22 @@ func (h *Handler) GetBookByIsbn(w http.ResponseWriter,
 		return
 	}
 
-	jsonHelper.WriteJson(w, http.StatusOK, book)
+	if bookMetadata == nil {
+		jsonHelper.ErrorJson(w, fmt.Errorf("book metadata not found"), http.StatusNotFound)
+		return
+	}
+
+	type BookWithMetadata struct {
+		Book     *models.Book         `json:"book"`
+		Metadata *models.BookMetadata `json:"metadata"`
+	}
+
+	var bookWithMetadata BookWithMetadata
+
+	bookWithMetadata.Book = book
+	bookWithMetadata.Metadata = bookMetadata
+
+	jsonHelper.WriteJson(w, http.StatusOK, bookWithMetadata)
 }
 
 func (h *Handler) GetPopularBooks(w http.ResponseWriter,
