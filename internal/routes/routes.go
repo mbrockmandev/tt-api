@@ -96,6 +96,7 @@ func NewRouter(h handlers.AppHandlers) http.Handler {
 			// library routes
 			r.Post("/libraries", h.CreateLibrary)
 			r.Get("/libraries", h.GetLibraryByName)
+			r.Get("/libraries/{id}", h.GetLibraryById)
 			r.Put("/libraries/{id}", h.UpdateLibrary)
 			r.Delete("/libraries/{id}", h.DeleteLibrary)
 
