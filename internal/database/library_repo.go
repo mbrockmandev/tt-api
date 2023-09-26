@@ -10,7 +10,7 @@ import (
 )
 
 func (p *PostgresDBRepo) CreateLibrary(library *models.Library) (int, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout*3)
 	defer cancel()
 
 	stmt := `
