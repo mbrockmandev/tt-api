@@ -74,7 +74,7 @@ func (h *Handler) RequireRole(reqRole string) func(next http.Handler) http.Handl
 
 			// mismatched
 			if claims.Role != reqRole {
-				jsonHelper.ErrorJson(w, fmt.Errorf("unauthorized: role mismatch"), http.StatusUnauthorized)
+				jsonHelper.ErrorJson(w, fmt.Errorf("unauthorized: role mismatch (%s != %s)", claims.Role, reqRole), http.StatusUnauthorized)
 				return
 			}
 
