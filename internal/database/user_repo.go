@@ -366,12 +366,24 @@ func (p *PostgresDBRepo) DeleteUser(id int) error {
 
 	query := `
 		delete from
+			users_libraries
+		where
+			user_id = $1
+	`
+
+	_, err := p.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	query = `
+		delete from
 			users
 		where
 			id = $1
 	`
 
-	_, err := p.DB.ExecContext(ctx, query, id)
+	_, err = p.DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
