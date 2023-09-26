@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -27,12 +26,12 @@ func (h *Handler) CreateLibrary(w http.ResponseWriter,
 
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		jsonHelper.ErrorJson(w, err, http.StatusBadRequest)
+		jsonHelper.ErrorJson(w, fmt.Errorf("invalid request body: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	if req.Name == "" || req.City == "" || req.StreetAddress == "" || req.PostalCode == "" || req.Country == "" || req.Phone == "" {
-		jsonHelper.ErrorJson(w, errors.New("invalid request body"), http.StatusBadRequest)
+		jsonHelper.ErrorJson(w, fmt.Errorf("invalid request body, field left blank: %v", err), http.StatusBadRequest)
 		return
 	}
 
@@ -47,7 +46,7 @@ func (h *Handler) CreateLibrary(w http.ResponseWriter,
 
 	_, err = h.App.DB.CreateLibrary(&newLibrary)
 	if err != nil {
-		jsonHelper.ErrorJson(w, err, http.StatusInternalServerError)
+		jsonHelper.ErrorJson(w, fmt.Errorf("unable to create library: %v", err), http.StatusInternalServerError)
 		return
 	}
 
