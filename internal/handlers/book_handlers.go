@@ -32,12 +32,12 @@ func (h *Handler) CreateBook(w http.ResponseWriter,
 	r *http.Request,
 ) {
 	var req struct {
-		Title       string `json:"title"`
-		Author      string `json:"author"`
-		ISBN        string `json:"isbn"`
-		PublishedAt string `json:"published_at"`
-		Summary     string `json:"summary"`
-		Thumbnail   string `json:"thumbnail"`
+		Title       string    `json:"title"`
+		Author      string    `json:"author"`
+		ISBN        string    `json:"isbn"`
+		PublishedAt time.Time `json:"published_at"`
+		Summary     string    `json:"summary"`
+		Thumbnail   string    `json:"thumbnail"`
 	}
 
 	book := &models.Book{

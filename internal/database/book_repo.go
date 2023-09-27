@@ -803,6 +803,8 @@ func buildUpdateBookQuery(id int, book *models.Book) (string, []interface{}) {
 		setValues = append(setValues, fmt.Sprintf("published_at = $%d", argId))
 		args = append(args, book.PublishedAt)
 		argId++
+	} else {
+		setValues = append(setValues, "published_at = now()")
 	}
 	if book.Summary != "" {
 		setValues = append(setValues, fmt.Sprintf("summary = $%d", argId))
@@ -823,14 +825,12 @@ func buildUpdateBookQuery(id int, book *models.Book) (string, []interface{}) {
 		setValues = append(setValues, fmt.Sprintf("created_at = $%d", argId))
 		args = append(args, book.CreatedAt)
 		argId++
+	} else {
+		setValues = append(setValues, "created_at = now()")
 	}
-	if !book.UpdatedAt.IsZero() {
-		setValues = append(setValues, fmt.Sprintf("updated_at = $%d", argId))
-		args = append(args, book.UpdatedAt)
-		argId++
-	}
+	setValues = append(setValues, "updated_at = now()")
 
-	if len(setValues) == 0 {
+	if len(setValues) <= 3 {
 		return "", nil
 	}
 
