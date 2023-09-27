@@ -835,7 +835,7 @@ func buildUpdateBookQuery(id int, book *models.Book) (string, []interface{}) {
 		return "", nil
 	}
 
-	query := fmt.Sprintf("update books set %s where id = %d", strings.Join(setValues, ", "), id)
+	query := fmt.Sprintf("update books set %s where id = %d", strings.Join(setValues, ", "), argId)
 	args = append(args, id)
 
 	return query, args

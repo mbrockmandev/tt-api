@@ -203,7 +203,7 @@ func buildUpdateLibraryQuery(id int, library *models.Library) (string, []interfa
 		return "", nil
 	}
 
-	query := fmt.Sprintf("update libraries set %s where id = $%d", strings.Join(setValues, ", "), id)
+	query := fmt.Sprintf("update libraries set %s where id = $%d", strings.Join(setValues, ", "), argId)
 	args = append(args, id)
 	return query, args
 }
