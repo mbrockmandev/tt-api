@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -829,7 +830,13 @@ func buildUpdateBookQuery(id int, book *models.Book) (string, []interface{}) {
 		argId++
 	}
 
+	if len(setValues) == 0 {
+		return "", nil
+	}
+
 	query := fmt.Sprintf("update books set %s where id = %d", strings.Join(setValues, ", "), id)
+
+	args = append(args, id)
 	return query, args
 }
 
@@ -843,6 +850,9 @@ func (p *PostgresDBRepo) UpdateBook(id int, book *models.Book) error {
 	}
 
 	query, args := buildUpdateBookQuery(id, book)
+	if query == "" {
+		return errors.New("no columns provided for update")
+	}
 	_, err = p.DB.ExecContext(ctx, query, args...)
 	return fmt.Errorf("failed to update book: %v -- query: %v -- args: %v", err, query, args)
 }

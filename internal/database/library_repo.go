@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -198,7 +199,12 @@ func buildUpdateLibraryQuery(id int, library *models.Library) (string, []interfa
 		argId++
 	}
 
+	if len(setValues) == 0 {
+		return "", nil
+	}
+
 	query := fmt.Sprintf("update libraries set %s where id = $%d", strings.Join(setValues, ", "), argId)
+	args = append(args, id)
 	return query, args
 }
 
@@ -207,6 +213,9 @@ func (p *PostgresDBRepo) UpdateLibrary(id int, library *models.Library) error {
 	defer cancel()
 
 	query, args := buildUpdateLibraryQuery(id, library)
+	if query == "" {
+		return errors.New("no columns provided for update")
+	}
 	_, err := p.DB.ExecContext(ctx, query, args...)
 
 	return fmt.Errorf("failed to update library: %v -- query: %v -- args: %v", err, query, args)

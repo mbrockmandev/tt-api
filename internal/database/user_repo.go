@@ -348,7 +348,12 @@ func buildUpdateUserQuery(id int, user *models.User) (string, []interface{}) {
 		argId++
 	}
 
+	if len(setValues) == 0 {
+		return "", nil
+	}
+
 	query := fmt.Sprintf("update users set %s where id = $%d", strings.Join(setValues, ", "), argId)
+	args = append(args, id)
 	return query, args
 }
 
@@ -362,6 +367,9 @@ func (p *PostgresDBRepo) UpdateUser(id int, user *models.User) error {
 	}
 
 	query, args := buildUpdateUserQuery(id, user)
+	if query == "" {
+		return errors.New("no columns provided for update")
+	}
 
 	result, err := p.DB.ExecContext(ctx, query, args...)
 	if err != nil {
