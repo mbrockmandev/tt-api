@@ -855,7 +855,11 @@ func (p *PostgresDBRepo) UpdateBook(id int, book *models.Book) error {
 		return errors.New("no columns provided for update")
 	}
 	_, err = p.DB.ExecContext(ctx, query, args...)
-	return fmt.Errorf("failed to update book: %v -- query: %v -- args: %v", err, query, args)
+	if err != nil {
+		return fmt.Errorf("failed to update book: %v -- query: %v -- args: %v", err, query, args)
+	}
+
+	return nil
 }
 
 func (p *PostgresDBRepo) DeleteBook(id int) error {

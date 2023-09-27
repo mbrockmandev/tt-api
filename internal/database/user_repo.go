@@ -371,14 +371,9 @@ func (p *PostgresDBRepo) UpdateUser(id int, user *models.User) error {
 		return errors.New("no columns provided for update")
 	}
 
-	result, err := p.DB.ExecContext(ctx, query, args...)
+	_, err = p.DB.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("failed to update user: %v -- query: %v -- args: %v id: %v user: %v", err, query, args, id, user)
-	}
-
-	rowsAffected, _ := result.RowsAffected()
-	if rowsAffected == 0 {
-		return errors.New("no rows updated")
+		return fmt.Errorf("failed to update user: %v", err)
 	}
 
 	return nil
