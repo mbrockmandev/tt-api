@@ -311,7 +311,7 @@ func (p *PostgresDBRepo) populateBooksForLibrary(ctx context.Context, libraryId 
 					($1, $2, $3, $4, $5)
 		`, bookId, libraryId, totalCopies, borrowedCopies, availableCopies)
 		if err != nil {
-			return fmt.Errorf("failed to insert book into library: %s", err)
+			return fmt.Errorf("failed to insert book into library: %s -- \nbookId: %v -- \nlibraryId: %v -- \ntotalCopies: %v -- \nborrowedCopies: %v -- \navailableCopies: %v -- \nbookIds: %v", err, bookId, libraryId, totalCopies, borrowedCopies, availableCopies, bookIds)
 		}
 	}
 	return nil
