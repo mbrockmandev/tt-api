@@ -35,6 +35,23 @@ func (p *PostgresDBRepo) CreateBook(book *models.Book, libraryId int) (int, erro
 		return 0, err
 	}
 
+	// default library association if not passed in (using sentinel value, 0)
+	if libraryId == 0 {
+		stmt = `
+			select
+				id
+			from
+				libraries
+			limit
+				1
+		`
+
+		err = p.DB.QueryRowContext(ctx, stmt).Scan(&libraryId)
+		if err != nil {
+			return 0, err
+		}
+	}
+
 	checkStmt := `
 		select
 			count(*)

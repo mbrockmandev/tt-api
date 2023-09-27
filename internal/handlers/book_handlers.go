@@ -6,6 +6,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mbrockmandev/tometracker/internal/jsonHelper"
@@ -31,27 +32,40 @@ func (h *Handler) CreateBook(w http.ResponseWriter,
 	r *http.Request,
 ) {
 	var req struct {
-		Book      models.Book `json:"book"`
-		LibraryId int         `json:"library_id"`
+		Title       string `json:"title"`
+		Author      string `json:"author"`
+		ISBN        string `json:"isbn"`
+		PublishedAt string `json:"published_at"`
+		Summary     string `json:"summary"`
+		Thumbnail   string `json:"thumbnail"`
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		jsonHelper.ErrorJson(w, err, http.StatusBadRequest)
+	book := &models.Book{
+		Title:       req.Title,
+		Author:      req.Author,
+		ISBN:        req.ISBN,
+		PublishedAt: time.Now(),
+		Summary:     req.Summary,
+		Thumbnail:   req.Thumbnail,
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		jsonHelper.ErrorJson(w, fmt.Errorf("failed to decode request: %s", err), http.StatusBadRequest)
 		return
 	}
 
-	_, err = h.App.DB.CreateBook(&req.Book, req.LibraryId)
+	libraryId, err := strconv.Atoi(r.URL.Query().Get("library_id"))
 	if err != nil {
-		jsonHelper.ErrorJson(w, err, http.StatusInternalServerError)
+		libraryId = 0
+	}
+
+	_, err = h.App.DB.CreateBook(book, libraryId)
+	if err != nil {
+		jsonHelper.ErrorJson(w, fmt.Errorf("failed to create book: %s", err), http.StatusInternalServerError)
 		return
 	}
 
-	jsonHelper.WriteJson(
-		w,
-		http.StatusCreated,
-		map[string]string{"message": "Book created successfully."},
-	)
+	jsonHelper.WriteJson(w, http.StatusCreated, map[string]string{"message": "Book created successfully."})
 }
 
 func (h *Handler) GetBookById(w http.ResponseWriter,
