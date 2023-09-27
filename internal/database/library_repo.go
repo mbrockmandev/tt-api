@@ -167,11 +167,6 @@ func buildUpdateLibraryQuery(id int, library *models.Library) (string, []interfa
 	var args []interface{}
 	var argId int = 1
 
-	if library.ID != 0 {
-		setValues = append(setValues, fmt.Sprintf("id = $%d", argId))
-		args = append(args, library.ID)
-		argId++
-	}
 	if library.Name != "" {
 		setValues = append(setValues, fmt.Sprintf("name = $%d", argId))
 		args = append(args, library.Name)

@@ -783,11 +783,6 @@ func buildUpdateBookQuery(id int, book *models.Book) (string, []interface{}) {
 	var args []interface{}
 	var argId int = 1
 
-	if book.ID != 0 {
-		setValues = append(setValues, fmt.Sprintf("id = $%d", argId))
-		args = append(args, book.ID)
-		argId++
-	}
 	if book.Title != "" {
 		setValues = append(setValues, fmt.Sprintf("title = $%d", argId))
 		args = append(args, book.Title)

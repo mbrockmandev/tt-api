@@ -317,11 +317,6 @@ func buildUpdateUserQuery(id int, user *models.User) (string, []interface{}) {
 	var args []interface{}
 	var argId int = 1
 
-	if user.ID != 0 {
-		setValues = append(setValues, fmt.Sprintf("id = $%d", argId))
-		args = append(args, user.ID)
-		argId++
-	}
 	if user.Email != "" {
 		setValues = append(setValues, fmt.Sprintf("email = $%d", argId))
 		args = append(args, user.Email)
