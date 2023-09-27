@@ -214,7 +214,7 @@ func (p *PostgresDBRepo) UpdateLibrary(id int, library *models.Library) error {
 	query, args := buildUpdateLibraryQuery(id, library)
 	_, err := p.DB.ExecContext(ctx, query, args...)
 
-	return fmt.Errorf("failed to update library: %v", err)
+	return fmt.Errorf("failed to update library: %v -- query: %v -- args: %v", err, query, args)
 }
 
 func (p *PostgresDBRepo) DeleteLibrary(id int) error {

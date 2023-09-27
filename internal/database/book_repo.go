@@ -849,7 +849,7 @@ func (p *PostgresDBRepo) UpdateBook(id int, book *models.Book) error {
 
 	query, args := buildUpdateBookQuery(id, book)
 	_, err = p.DB.ExecContext(ctx, query, args...)
-	return fmt.Errorf("failed to update book: %v", err)
+	return fmt.Errorf("failed to update book: %v -- query: %v -- args: %v", err, query, args)
 }
 
 func (p *PostgresDBRepo) DeleteBook(id int) error {
