@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand"
 
 	"github.com/lib/pq"
@@ -35,10 +36,7 @@ func (p *PostgresDBRepo) CreateLibrary(library *models.Library) (int, error) {
 		return 0, fmt.Errorf("failed to create library: %v", err)
 	}
 
-	err = p.populateBooksForLibrary(ctx, newId)
-	if err != nil {
-		return 0, fmt.Errorf("failed to populate books for library: %v", err)
-	}
+	go p.populateBooksForLibrary(ctx, newId)
 
 	return newId, nil
 }
@@ -279,10 +277,11 @@ func (p *PostgresDBRepo) GetBooksByLibrary(libraryId int) ([]*models.Book,
 	return books, libraryInventory, nil
 }
 
-func (p *PostgresDBRepo) populateBooksForLibrary(ctx context.Context, libraryId int) error {
+func (p *PostgresDBRepo) populateBooksForLibrary(ctx context.Context, libraryId int) {
 	rows, err := p.DB.QueryContext(ctx, "select id from books")
 	if err != nil {
-		return fmt.Errorf("failed to retrieve ids of books: %s", err)
+		log.Printf("failed to retrieve ids of books: %s", err)
+		return
 	}
 	defer rows.Close()
 
@@ -290,12 +289,14 @@ func (p *PostgresDBRepo) populateBooksForLibrary(ctx context.Context, libraryId 
 	for rows.Next() {
 		var bookId int
 		if err := rows.Scan(&bookId); err != nil {
-			return fmt.Errorf("failed to scan book id: %s", err)
+			log.Printf("failed to scan book id: %s", err)
+			return
 		}
 		bookIds = append(bookIds, bookId)
 	}
 	if err := rows.Err(); err != nil {
-		return fmt.Errorf("failed to go through rows: %s", err)
+		log.Printf("failed to go through rows: %s", err)
+		return
 	}
 
 	for _, bookId := range bookIds {
@@ -311,8 +312,8 @@ func (p *PostgresDBRepo) populateBooksForLibrary(ctx context.Context, libraryId 
 					($1, $2, $3, $4, $5)
 		`, bookId, libraryId, totalCopies, borrowedCopies, availableCopies)
 		if err != nil {
-			return fmt.Errorf("failed to insert book into library: %s -- \nbookId: %v -- \nlibraryId: %v -- \ntotalCopies: %v -- \nborrowedCopies: %v -- \navailableCopies: %v -- \nbookIds: %v", err, bookId, libraryId, totalCopies, borrowedCopies, availableCopies, bookIds)
+			log.Printf("failed to insert book into library: %s bookId: %v -- \nlibraryId: %v", err, bookId, libraryId)
+			return
 		}
 	}
-	return nil
 }
