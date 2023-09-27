@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/mbrockmandev/tometracker/internal/models"
@@ -777,6 +778,66 @@ func (p *PostgresDBRepo) ReturnBook(userId, bookId, libraryId int) (*models.Book
 	return bookMetadata, nil
 }
 
+func buildUpdateBookQuery(id int, book *models.Book) (string, []interface{}) {
+	var setValues []string
+	var args []interface{}
+	var argId int = 1
+
+	if book.ID != 0 {
+		setValues = append(setValues, fmt.Sprintf("id = $%d", argId))
+		args = append(args, book.ID)
+		argId++
+	}
+	if book.Title != "" {
+		setValues = append(setValues, fmt.Sprintf("title = $%d", argId))
+		args = append(args, book.Title)
+		argId++
+	}
+	if book.Author != "" {
+		setValues = append(setValues, fmt.Sprintf("author = $%d", argId))
+		args = append(args, book.Author)
+		argId++
+	}
+	if book.ISBN != "" {
+		setValues = append(setValues, fmt.Sprintf("isbn = $%d", argId))
+		args = append(args, book.ISBN)
+		argId++
+	}
+	if !book.PublishedAt.IsZero() {
+		setValues = append(setValues, fmt.Sprintf("published_at = $%d", argId))
+		args = append(args, book.PublishedAt)
+		argId++
+	}
+	if book.Summary != "" {
+		setValues = append(setValues, fmt.Sprintf("summary = $%d", argId))
+		args = append(args, book.Summary)
+		argId++
+	}
+	if book.Thumbnail != "" {
+		setValues = append(setValues, fmt.Sprintf("thumbnail = $%d", argId))
+		args = append(args, book.Thumbnail)
+		argId++
+	}
+	if book.Edition != "" {
+		setValues = append(setValues, fmt.Sprintf("edition = $%d", argId))
+		args = append(args, book.Edition)
+		argId++
+	}
+	if !book.CreatedAt.IsZero() {
+		setValues = append(setValues, fmt.Sprintf("created_at = $%d", argId))
+		args = append(args, book.CreatedAt)
+		argId++
+	}
+	if !book.UpdatedAt.IsZero() {
+		setValues = append(setValues, fmt.Sprintf("updated_at = $%d", argId))
+		args = append(args, book.UpdatedAt)
+		argId++
+	}
+
+	query := fmt.Sprintf("update books set %s where id = %d", strings.Join(setValues, ", "), id)
+	return query, args
+}
+
 func (p *PostgresDBRepo) UpdateBook(id int, book *models.Book) error {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
@@ -786,28 +847,9 @@ func (p *PostgresDBRepo) UpdateBook(id int, book *models.Book) error {
 		return err
 	}
 
-	stmt := fmt.Sprintf(`
-		update
-			books
-		set
-			title = $1, author = $2, isbn = $3,
-			published_at = $4, summary = $5, thumbnail = $6
-		where
-			id = %v
-	`, id)
-
-	_, err = p.DB.ExecContext(ctx, stmt,
-		book.Title,
-		book.Author,
-		book.ISBN,
-		book.PublishedAt,
-		book.Summary,
-		book.Thumbnail,
-	)
-	if err != nil {
-		return err
-	}
-	return nil
+	query, args := buildUpdateBookQuery(id, book)
+	_, err = p.DB.ExecContext(ctx, query, args...)
+	return err
 }
 
 func (p *PostgresDBRepo) DeleteBook(id int) error {

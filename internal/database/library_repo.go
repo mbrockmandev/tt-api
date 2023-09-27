@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strings"
 
 	"github.com/lib/pq"
 	"github.com/mbrockmandev/tometracker/internal/models"
@@ -161,30 +162,57 @@ func (p *PostgresDBRepo) GetLibraryById(id int) (*models.Library, error) {
 	return &library, nil
 }
 
+func buildUpdateLibraryQuery(id int, library *models.Library) (string, []interface{}) {
+	var setValues []string
+	var args []interface{}
+	var argId int = 1
+
+	if library.ID != 0 {
+		setValues = append(setValues, fmt.Sprintf("id = $%d", argId))
+		args = append(args, library.ID)
+		argId++
+	}
+	if library.Name != "" {
+		setValues = append(setValues, fmt.Sprintf("name = $%d", argId))
+		args = append(args, library.Name)
+		argId++
+	}
+	if library.City != "" {
+		setValues = append(setValues, fmt.Sprintf("city = $%d", argId))
+		args = append(args, library.City)
+		argId++
+	}
+	if library.StreetAddress != "" {
+		setValues = append(setValues, fmt.Sprintf("street_address = $%d", argId))
+		args = append(args, library.StreetAddress)
+		argId++
+	}
+	if library.PostalCode != "" {
+		setValues = append(setValues, fmt.Sprintf("postal_code = $%d", argId))
+		args = append(args, library.PostalCode)
+		argId++
+	}
+	if library.Country != "" {
+		setValues = append(setValues, fmt.Sprintf("country = $%d", argId))
+		args = append(args, library.Country)
+		argId++
+	}
+	if library.Phone != "" {
+		setValues = append(setValues, fmt.Sprintf("phone = $%d", argId))
+		args = append(args, library.Phone)
+		argId++
+	}
+
+	query := fmt.Sprintf("update libraries set %s where id = $%d", strings.Join(setValues, ", "), argId)
+	return query, args
+}
+
 func (p *PostgresDBRepo) UpdateLibrary(id int, library *models.Library) error {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	stmt := `
-		update
-			libraries
-		set
-			name = $1,
-			city = $2,
-			street_address = $3,
-			postal_code = $4,
-			country = $5,
-			phone = $6
-	`
-
-	_, err := p.DB.ExecContext(ctx, stmt,
-		library.Name,
-		library.City,
-		library.StreetAddress,
-		library.PostalCode,
-		library.Country,
-		library.Phone,
-	)
+	query, args := buildUpdateLibraryQuery(id, library)
+	_, err := p.DB.ExecContext(ctx, query, args...)
 
 	return err
 }

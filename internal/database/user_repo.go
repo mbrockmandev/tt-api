@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/mbrockmandev/tometracker/internal/models"
@@ -311,6 +312,51 @@ func (p *PostgresDBRepo) GetRecentlyReturnedBooksByUserId(userId int) ([]*models
 	return books, nil
 }
 
+func buildUpdateUserQuery(id int, user *models.User) (string, []interface{}) {
+	var setValues []string
+	var args []interface{}
+	var argId int = 1
+
+	if user.ID != 0 {
+		setValues = append(setValues, fmt.Sprintf("id = $%d", argId))
+		args = append(args, user.ID)
+		argId++
+	}
+	if user.Email != "" {
+		setValues = append(setValues, fmt.Sprintf("email = $%d", argId))
+		args = append(args, user.Email)
+		argId++
+	}
+	if user.FirstName != "" {
+		setValues = append(setValues, fmt.Sprintf("first_name = $%d", argId))
+		args = append(args, user.FirstName)
+		argId++
+	}
+	if user.LastName != "" {
+		setValues = append(setValues, fmt.Sprintf("last_name = $%d", argId))
+		args = append(args, user.LastName)
+		argId++
+	}
+	if user.Password != "" {
+		setValues = append(setValues, fmt.Sprintf("password = $%d", argId))
+		args = append(args, user.Password)
+		argId++
+	}
+	if user.Role != "" {
+		setValues = append(setValues, fmt.Sprintf("role = $%d", argId))
+		args = append(args, user.Role)
+		argId++
+	}
+	if !user.UpdatedAt.IsZero() {
+		setValues = append(setValues, fmt.Sprintf("updated_at = $%d", argId))
+		args = append(args, user.UpdatedAt)
+		argId++
+	}
+
+	query := fmt.Sprintf("update users set %s where id = $%d", strings.Join(setValues, ", "), argId)
+	return query, args
+}
+
 func (p *PostgresDBRepo) UpdateUser(id int, user *models.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
@@ -320,34 +366,8 @@ func (p *PostgresDBRepo) UpdateUser(id int, user *models.User) error {
 		return err
 	}
 
-	var query string
-	if user.Password != "" {
-		query = `
-			update
-				users
-			set
-				email = $1, first_name = $2, last_name = $3, password = $4,
-				role = $5, updated_at = $6 where id = $7
-		`
-	} else {
-		query = `
-			update
-				users
-			set
-				email = $1, first_name = $2, last_name = $3,
-				role = $4, updated_at = $5 where id = $6
-		`
-	}
-
-	result, err := p.DB.ExecContext(ctx, query,
-		user.Email,
-		user.FirstName,
-		user.LastName,
-		user.Password,
-		user.Role,
-		user.UpdatedAt,
-		&id,
-	)
+	query, args := buildUpdateUserQuery(id, user)
+	result, err := p.DB.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}
