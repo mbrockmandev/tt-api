@@ -34,7 +34,7 @@ func (p *PostgresDBRepo) CreateBook(book *models.Book, libraryId int) (int, erro
 		book.Thumbnail,
 	).Scan(&newId)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to scan new book in: %v -- book: %v", err, book)
 	}
 
 	// default library association if not passed in (using sentinel value, 0)
@@ -50,7 +50,7 @@ func (p *PostgresDBRepo) CreateBook(book *models.Book, libraryId int) (int, erro
 
 		err = p.DB.QueryRowContext(ctx, stmt).Scan(&libraryId)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("failed to get library Id: %v", err)
 		}
 	}
 
@@ -66,7 +66,7 @@ func (p *PostgresDBRepo) CreateBook(book *models.Book, libraryId int) (int, erro
 	var count int
 	err = p.DB.QueryRowContext(ctx, checkStmt, newId, libraryId).Scan(&count)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to get association between book and library: %v", err)
 	}
 
 	if count == 0 {
@@ -80,7 +80,7 @@ func (p *PostgresDBRepo) CreateBook(book *models.Book, libraryId int) (int, erro
 
 		_, err = p.DB.ExecContext(ctx, insertStmt, newId, libraryId)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("failed to insert into books_libraries: %v", err)
 		}
 	} else {
 		updateStmt := `
@@ -95,7 +95,7 @@ func (p *PostgresDBRepo) CreateBook(book *models.Book, libraryId int) (int, erro
 
 		_, err = p.DB.ExecContext(ctx, updateStmt, newId, libraryId)
 		if err != nil {
-			return 0, err
+			return 0, fmt.Errorf("failed to update books_libraries: %v", err)
 		}
 	}
 

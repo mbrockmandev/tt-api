@@ -203,7 +203,11 @@ func buildUpdateLibraryQuery(id int, library *models.Library) (string, []interfa
 		return "", nil
 	}
 
-	query := fmt.Sprintf("update libraries set %s where id = $%d", strings.Join(setValues, ", "), argId)
+	query := fmt.Sprintf(
+		"update libraries set %s where id = $%d",
+		strings.Join(setValues, ", "),
+		argId,
+	)
 	args = append(args, id)
 	return query, args
 }
@@ -217,7 +221,6 @@ func (p *PostgresDBRepo) UpdateLibrary(id int, library *models.Library) error {
 		return errors.New("no columns provided for update")
 	}
 	_, err := p.DB.ExecContext(ctx, query, args...)
-
 	if err != nil {
 		return fmt.Errorf("failed to update library: %v", err)
 	}
@@ -241,7 +244,8 @@ func (p *PostgresDBRepo) DeleteLibrary(id int) error {
 }
 
 func (p *PostgresDBRepo) GetBooksByLibrary(libraryId int) ([]*models.Book,
-	[]*models.BookMetadata, error) {
+	[]*models.BookMetadata, error,
+) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -348,7 +352,12 @@ func (p *PostgresDBRepo) populateBooksForLibrary(ctx context.Context, libraryId 
 					($1, $2, $3, $4, $5)
 		`, bookId, libraryId, totalCopies, borrowedCopies, availableCopies)
 		if err != nil {
-			log.Printf("failed to insert book into library: %s bookId: %v -- \nlibraryId: %v", err, bookId, libraryId)
+			log.Printf(
+				"failed to insert book into library: %s bookId: %v -- \nlibraryId: %v",
+				err,
+				bookId,
+				libraryId,
+			)
 			return
 		}
 	}
