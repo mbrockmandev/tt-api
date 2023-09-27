@@ -780,6 +780,7 @@ func (p *PostgresDBRepo) ReturnBook(userId, bookId, libraryId int) (*models.Book
 }
 
 func buildUpdateBookQuery(id int, book *models.Book) (string, []interface{}) {
+	const defaultUpdateFieldsCount = 3
 	var setValues []string
 	var args []interface{}
 	var argId int = 1
@@ -830,13 +831,13 @@ func buildUpdateBookQuery(id int, book *models.Book) (string, []interface{}) {
 	}
 	setValues = append(setValues, "updated_at = now()")
 
-	if len(setValues) <= 3 {
+	if len(setValues) <= defaultUpdateFieldsCount {
 		return "", nil
 	}
 
 	query := fmt.Sprintf("update books set %s where id = %d", strings.Join(setValues, ", "), id)
-
 	args = append(args, id)
+
 	return query, args
 }
 

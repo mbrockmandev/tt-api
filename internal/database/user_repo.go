@@ -352,7 +352,7 @@ func buildUpdateUserQuery(id int, user *models.User) (string, []interface{}) {
 		return "", nil
 	}
 
-	query := fmt.Sprintf("update users set %s where id = $%d", strings.Join(setValues, ", "), argId)
+	query := fmt.Sprintf("update users set %s where id = $%d", strings.Join(setValues, ", "), id)
 	args = append(args, id)
 	return query, args
 }
