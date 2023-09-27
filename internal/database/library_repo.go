@@ -10,7 +10,7 @@ import (
 )
 
 func (p *PostgresDBRepo) CreateLibrary(library *models.Library) (int, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout*3)
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
 	stmt := `
@@ -32,12 +32,12 @@ func (p *PostgresDBRepo) CreateLibrary(library *models.Library) (int, error) {
 		library.Phone,
 	).Scan(&newId)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to create library: %v", err)
 	}
 
 	err = p.populateBooksForLibrary(ctx, newId)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to populate books for library: %v", err)
 	}
 
 	return newId, nil
