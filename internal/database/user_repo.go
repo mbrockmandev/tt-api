@@ -363,13 +363,13 @@ func (p *PostgresDBRepo) UpdateUser(id int, user *models.User) error {
 
 	_, err := p.GetUserById(id)
 	if err != nil {
-		return err
+		return fmt.Errorf("no user found with id %v", id)
 	}
 
 	query, args := buildUpdateUserQuery(id, user)
 	result, err := p.DB.ExecContext(ctx, query, args...)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update user: %v", err)
 	}
 
 	rowsAffected, _ := result.RowsAffected()

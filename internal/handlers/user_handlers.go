@@ -96,13 +96,13 @@ func (h *Handler) CreateUser(w http.ResponseWriter,
 
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		jsonHelper.ErrorJson(w, err, http.StatusBadRequest)
+		jsonHelper.ErrorJson(w, fmt.Errorf("invalid request body: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	_, err = h.App.DB.CreateUser(&user)
 	if err != nil {
-		jsonHelper.ErrorJson(w, err, http.StatusInternalServerError)
+		jsonHelper.ErrorJson(w, fmt.Errorf("failed to create user: %v", err), http.StatusInternalServerError)
 		return
 	}
 

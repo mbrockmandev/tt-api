@@ -396,21 +396,21 @@ func (h *Handler) UpdateBook(w http.ResponseWriter,
 	bookIdStr := chi.URLParam(r, "id")
 	bookId, err := strconv.Atoi(bookIdStr)
 	if err != nil {
-		jsonHelper.ErrorJson(w, fmt.Errorf("invalid id"), http.StatusBadRequest)
+		jsonHelper.ErrorJson(w, fmt.Errorf("invalid id: %v", err), http.StatusBadRequest)
 		return
 	}
 	var book models.Book
 
 	err = json.NewDecoder(r.Body).Decode(&book)
 	if err != nil {
-		jsonHelper.ErrorJson(w, err, http.StatusBadRequest)
+		jsonHelper.ErrorJson(w, fmt.Errorf("invalid request body: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	book.ID = bookId
 	err = h.App.DB.UpdateBook(bookId, &book)
 	if err != nil {
-		jsonHelper.ErrorJson(w, err, http.StatusInternalServerError)
+		jsonHelper.ErrorJson(w, fmt.Errorf("failed to update book: %s", err), http.StatusInternalServerError)
 		return
 	}
 

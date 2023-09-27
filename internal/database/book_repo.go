@@ -844,12 +844,12 @@ func (p *PostgresDBRepo) UpdateBook(id int, book *models.Book) error {
 
 	_, _, err := p.GetBookById(id)
 	if err != nil {
-		return err
+		return fmt.Errorf("no book found with id %v", id)
 	}
 
 	query, args := buildUpdateBookQuery(id, book)
 	_, err = p.DB.ExecContext(ctx, query, args...)
-	return err
+	return fmt.Errorf("failed to update book: %v", err)
 }
 
 func (p *PostgresDBRepo) DeleteBook(id int) error {

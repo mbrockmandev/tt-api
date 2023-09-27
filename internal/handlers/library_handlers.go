@@ -167,14 +167,14 @@ func (h *Handler) UpdateLibrary(w http.ResponseWriter,
 
 	err = json.NewDecoder(r.Body).Decode(&library)
 	if err != nil {
-		jsonHelper.ErrorJson(w, err, http.StatusBadRequest)
+		jsonHelper.ErrorJson(w, fmt.Errorf("invalid request body: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	library.ID = libraryId
 	err = h.App.DB.UpdateLibrary(libraryId, &library)
 	if err != nil {
-		jsonHelper.ErrorJson(w, err, http.StatusInternalServerError)
+		jsonHelper.ErrorJson(w, fmt.Errorf("unable to update library: %v", err), http.StatusInternalServerError)
 		return
 	}
 
