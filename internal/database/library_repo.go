@@ -282,7 +282,7 @@ func (p *PostgresDBRepo) GetBooksByLibrary(libraryId int) ([]*models.Book,
 func (p *PostgresDBRepo) populateBooksForLibrary(ctx context.Context, libraryId int) error {
 	rows, err := p.DB.QueryContext(ctx, "select id from books")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to retrieve ids of books: %s", err)
 	}
 	defer rows.Close()
 
@@ -290,12 +290,12 @@ func (p *PostgresDBRepo) populateBooksForLibrary(ctx context.Context, libraryId 
 	for rows.Next() {
 		var bookId int
 		if err := rows.Scan(&bookId); err != nil {
-			return err
+			return fmt.Errorf("failed to scan book id: %s", err)
 		}
 		bookIds = append(bookIds, bookId)
 	}
 	if err := rows.Err(); err != nil {
-		return err
+		return fmt.Errorf("failed to go through rows: %s", err)
 	}
 
 	for _, bookId := range bookIds {
@@ -311,7 +311,7 @@ func (p *PostgresDBRepo) populateBooksForLibrary(ctx context.Context, libraryId 
 					($1, $2, $3, $4, $5)
 		`, bookId, libraryId, totalCopies, borrowedCopies, availableCopies)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to insert book into library: %s", err)
 		}
 	}
 	return nil
