@@ -317,7 +317,10 @@ func (p *PostgresDBRepo) GetBookByIdForLibrary(id, libraryId int) (*models.Book,
 	return book, bookMetadata, nil
 }
 
-func (p *PostgresDBRepo) GetBookByIsbnForLibrary(isbn string, libraryId int) (*models.Book, *models.BookMetadata, error) {
+func (p *PostgresDBRepo) GetBookByIsbnForLibrary(
+	isbn string,
+	libraryId int,
+) (*models.Book, *models.BookMetadata, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -835,7 +838,7 @@ func buildUpdateBookQuery(id int, book *models.Book) (string, []interface{}) {
 		return "", nil
 	}
 
-	query := fmt.Sprintf("update books set %s where id = %d", strings.Join(setValues, ", "), argId)
+	query := fmt.Sprintf("update books set %s where id = $%d", strings.Join(setValues, ", "), argId)
 	args = append(args, id)
 
 	return query, args
