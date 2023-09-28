@@ -34,7 +34,12 @@ func (p *PostgresDBRepo) CreateBook(book *models.Book, libraryId int) (int, erro
 		book.Thumbnail,
 	).Scan(&newId)
 	if err != nil {
-		return 0, fmt.Errorf("failed to scan new book in: %v -- book: %v", err, book)
+		return 0, fmt.Errorf(
+			"failed to scan new book in: %v -- title: %v, isbn: %v",
+			err,
+			book.Title,
+			book.ISBN,
+		)
 	}
 
 	// default library association if not passed in (using sentinel value, 0)
