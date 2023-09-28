@@ -6,7 +6,6 @@ import (
 	"math"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/mbrockmandev/tometracker/internal/jsonHelper"
@@ -31,26 +30,14 @@ func (h *Handler) KeepApiAlive(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) CreateBook(w http.ResponseWriter,
 	r *http.Request,
 ) {
-	var req struct {
-		Title       string    `json:"title"`
-		Author      string    `json:"author"`
-		ISBN        string    `json:"isbn"`
-		PublishedAt time.Time `json:"published_at"`
-		Summary     string    `json:"summary"`
-		Thumbnail   string    `json:"thumbnail"`
-	}
+	var book models.Book
 
-	book := &models.Book{
-		Title:       req.Title,
-		Author:      req.Author,
-		ISBN:        req.ISBN,
-		PublishedAt: time.Now(),
-		Summary:     req.Summary,
-		Thumbnail:   req.Thumbnail,
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		jsonHelper.ErrorJson(w, fmt.Errorf("failed to decode request: %s", err), http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&book); err != nil {
+		jsonHelper.ErrorJson(
+			w,
+			fmt.Errorf("failed to decode request: %s", err),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
@@ -59,13 +46,21 @@ func (h *Handler) CreateBook(w http.ResponseWriter,
 		libraryId = 0
 	}
 
-	_, err = h.App.DB.CreateBook(book, libraryId)
+	_, err = h.App.DB.CreateBook(&book, libraryId)
 	if err != nil {
-		jsonHelper.ErrorJson(w, fmt.Errorf("failed to create book: %s", err), http.StatusInternalServerError)
+		jsonHelper.ErrorJson(
+			w,
+			fmt.Errorf("failed to create book: %s", err),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
-	jsonHelper.WriteJson(w, http.StatusCreated, map[string]string{"message": "Book created successfully."})
+	jsonHelper.WriteJson(
+		w,
+		http.StatusCreated,
+		map[string]string{"message": "Book created successfully."},
+	)
 }
 
 func (h *Handler) GetBookById(w http.ResponseWriter,
@@ -410,7 +405,11 @@ func (h *Handler) UpdateBook(w http.ResponseWriter,
 	book.ID = bookId
 	err = h.App.DB.UpdateBook(bookId, &book)
 	if err != nil {
-		jsonHelper.ErrorJson(w, fmt.Errorf("failed to update book: %s", err), http.StatusInternalServerError)
+		jsonHelper.ErrorJson(
+			w,
+			fmt.Errorf("failed to update book: %s", err),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
