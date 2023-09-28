@@ -44,7 +44,6 @@ CREATE TABLE IF NOT EXISTS users_books (
   due_date TIMESTAMPTZ,
   returned_at TIMESTAMPTZ,
   borrowed_at TIMESTAMPTZ,
-  UNIQUE(user_id, book_id)
 );
 
 CREATE TABLE IF NOT EXISTS books_genres (
