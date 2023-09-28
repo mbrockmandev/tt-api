@@ -15,7 +15,10 @@ func (p *PostgresDBRepo) CreateBook(book *models.Book, libraryId int) (int, erro
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	var publishedAt time.Time
+  var publishedAt time.Time
+  if book.PublishedAt.IsZero() {
+    publishedAt = time.now()
+  }
 
 	stmt := `
 		insert into
@@ -950,3 +953,4 @@ func (p *PostgresDBRepo) ReportPopularBooks() ([]*models.Book, error) {
 
 	return books, nil
 }
+
