@@ -15,6 +15,8 @@ func (p *PostgresDBRepo) CreateBook(book *models.Book, libraryId int) (int, erro
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
+	var publishedAt time.Time
+
 	stmt := `
 		insert into
 			books
@@ -29,7 +31,7 @@ func (p *PostgresDBRepo) CreateBook(book *models.Book, libraryId int) (int, erro
 		book.Title,
 		book.Author,
 		book.ISBN,
-		book.PublishedAt,
+		publishedAt,
 		book.Summary,
 		book.Thumbnail,
 	).Scan(&newId)
