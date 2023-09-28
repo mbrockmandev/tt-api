@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS users_books (
   book_id INT REFERENCES books(id) ON DELETE CASCADE,
   due_date TIMESTAMPTZ,
   returned_at TIMESTAMPTZ,
-  borrowed_at TIMESTAMPTZ,
+  borrowed_at TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS books_genres (
