@@ -234,12 +234,24 @@ func (p *PostgresDBRepo) DeleteLibrary(id int) error {
 
 	stmt := `
 		delete from
+			users_libraries
+		where 
+			library_id = $1
+	`
+
+	_, err := p.DB.ExecContext(ctx, stmt, id)
+	if err != nil {
+		return err
+	}
+
+	stmt = `
+		delete from
 			libraries
 		where
 			id = $1
 	`
 
-	_, err := p.DB.ExecContext(ctx, stmt, id)
+	_, err = p.DB.ExecContext(ctx, stmt, id)
 	return err
 }
 
